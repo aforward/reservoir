@@ -27,7 +27,7 @@ module Reservoir
     describe "#welcome_message" do
       
       it "should work" do
-        @application.welcome_message.should == "------\nReservoir v#{Reservoir::VERSION}\n------\n"
+        @application.welcome_message.should == "reservoir, version #{Reservoir::VERSION}\n"
       end
       
     end

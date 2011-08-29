@@ -29,6 +29,12 @@ module Reservoir
           @analyzer.version.should == "0.4.8"
         end
         
+        it "should understand ruby" do
+          @analyzer.read("ruby 1.8.7 (2008-08-11 patchlevel 72) [x86_64-linux]")
+          @analyzer.version_parts.should == ["1","8","7","72"]
+          @analyzer.version.should == "1.8.7-p72"
+        end
+        
       end
       
       

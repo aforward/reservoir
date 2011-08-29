@@ -19,7 +19,10 @@ Gem::Specification.new do |s|
   s.default_executable = 'bin/reservoir'
   s.require_paths = ["lib"]
 
-  # specify any dependencies here; for example:
-  # s.add_development_dependency "rspec"
-  # s.add_runtime_dependency "rest-client"
+  s.add_development_dependency('rspec')
+  s.add_development_dependency('autotest')
+  s.add_development_dependency('autotest-fsevent') if RUBY_PLATFORM =~ /darwin/i
+  s.add_development_dependency('rb-fsevent') if RUBY_PLATFORM =~ /darwin/i
+
+
 end

@@ -1,5 +1,10 @@
 #!/usr/bin/env ruby
-require 'rubygems'
-gem 'reservoir'
 
+begin
+  require 'rubygems'
+  gem 'reservoir'
+rescue LoadError
+end
+
+require 'reservoir'
 Reservoir::Application.new.run

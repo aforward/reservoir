@@ -65,19 +65,20 @@ module Reservoir
 
         it "should handle one file" do
           @application.should_receive(:welcome_message)
-          @application.should_receive(:project_message).with(@project_file)
+          @application.should_receive(:project_message)
           @application.should_receive(:which_script_message).exactly(3).times
           @application.run([@project_file])
         end
 
         it "should handle multiple file" do
+          @mock = Caller.new
+          @mock.stub!(:go).and_return(true)
+          Caller.stub!(:new).and_return(@mock)
           @application.should_receive(:welcome_message)
-          @application.should_receive(:project_message).with(@project_file)
-          @application.should_receive(:project_message).with(@project_file2)
+          @application.should_receive(:project_message).exactly(2).times
           @application.should_receive(:which_script_message).exactly(4).times
           @application.run([@project_file,@project_file2])
         end
-
         
       end
       
@@ -101,7 +102,7 @@ module Reservoir
     describe "#messages" do
       
       it "should welcome_message" do
-        @application.welcome_message.should == "reservoir, version 0.0.1\n"
+        @application.welcome_message.should == "reservoir, version 0.0.2\n"
       end
 
       it "should usage_message" do
@@ -109,7 +110,8 @@ module Reservoir
       end
       
       it "should project_message" do
-        @application.project_message("blah.txt").should == "\n===\nLoading Project: blah.txt\n===\n"
+        p = Project.new(file: "blah.txt")
+        @application.project_message(p).should == "\n===\nLoading Project: local [blah.txt]\n===\n"
       end
       
       it "should exception_message" do

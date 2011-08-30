@@ -14,8 +14,8 @@ module Reservoir
       "ERROR: #{error.message}\n\n  #{error.backtrace.join('\n  ')}"
     end
     
-    def project_message(filename)
-      "\n===\nLoading Project: #{filename}\n===\n"
+    def project_message(project)
+      "\n===\nLoading Project: #{project.name} [#{project.file}]\n===\n"
     end
     
     def which_script_message(which_script)
@@ -43,19 +43,19 @@ module Reservoir
       
       args.each do |filename|
         begin
-          p = Project.new(file: filename)
+          all_projects = Project.load_from_file(filename)
           Application.print project_message(filename)
-          which_script = p.which_script_template
-          p.scripts.each do |script|
-            which_script.go(script)
-            Application.print which_script_message(which_script)
+          all_projects.each do |p|
+            which_script = p.which_script_template
+            p.scripts.each do |script|
+              which_script.go(script)
+              Application.print which_script_message(which_script)
+            end
           end
         rescue
           Application.print exception_message($!)
         end
       end
-      
-      
       Application.print ""
     end
 

@@ -4,15 +4,32 @@ module Reservoir
 
     attr_accessor :remote_user, :remote_server, :command, :response
 
+    def initialize(data = {})
+      @remote_user = data[:remote_user]
+      @remote_server = data[:remote_server]
+      @command = data[:command]
+      @success = false
+    end
 
-    def go
+    def success?
+      @success
+    end
+
+    def go(command = nil)
       begin
+        @command = command unless command.nil?
         @response = `#{full_command}`
-        true
+        @success = true
       rescue
         @response = "#{$!}"
-        false
+        @success = false
       end
+      @success
+    end
+    
+    def go_with_response(command = nil)
+      go(command)
+      @response
     end
 
     def ssh

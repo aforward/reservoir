@@ -8,28 +8,64 @@ module Reservoir
       @caller = Caller.new
     end
     
+    before(:all) do
+      File.open("findme.txt", 'w') {|f| f.write("test123") }
+    end
+    
+    after(:all) do
+      File.delete("findme.txt")
+    end    
+    
+    describe "#initialize" do
+      
+      it "should set command, remote_server, remote_user" do
+        caller = Caller.new(:command => "a", :remote_server => "b", :remote_user => "c")
+        caller.command.should == "a"
+        caller.remote_server.should == "b"
+        caller.remote_user.should == "c"
+      end
+      
+    end
+    
     describe "#go" do
-      
-      before(:each) do
-        File.open("findme.txt", 'w') {|f| f.write("test123") }
-      end
-      
-      after(:each) do
-        File.delete("findme.txt")
-      end
       
       it "should capture command as string" do
         @caller.command = "cat findme.txt"
         @caller.go.should == true
+        @caller.success?.should == true
         @caller.response.should == "test123"
       end
+      
+      it "should allow command as parameter" do
+        @caller.command = "cat blah.txt"
+        @caller.go("cat findme.txt").should == true
+        @caller.success?.should == true
+        @caller.response.should == "test123"
+      end
+      
       
       it "should report errors" do
         @caller.command = "garbligook"
         @caller.go.should == false
+        @caller.success?.should == false
         @caller.response.should == "No such file or directory - garbligook"
       end
       
+    end
+
+
+    describe "#go_with_response" do
+      
+      it "should capture command as string" do
+        @caller.command = "cat findme.txt"
+        @caller.go_with_response.should == "test123"
+      end
+
+      it "should allow command as parameter" do
+        @caller.command = "cat blah.txt"
+        @caller.go_with_response("cat findme.txt").should == "test123"
+      end
+
       
     end
     

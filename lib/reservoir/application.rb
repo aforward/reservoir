@@ -8,8 +8,15 @@ module Reservoir
 
     def run
       Application.print welcome_message
-      Application.print "--- Nothing to do yet"
-      Application.print ''
+      p = Project.new
+      whereis = WhereIs.new
+      Application.print ""
+      Application.print "... Locating Scripts"
+      p.scripts.each do |script|
+        whereis.go(script)
+        Application.print "#{script} : #{whereis.response}"
+      end
+      Application.print ""
     end
 
     # Provide the ability to direct the stdio with a print_mode switch

@@ -9,6 +9,11 @@ module Reservoir
       @project_file2 = File.dirname(__FILE__) + '/sample_project2.yml'
       @application = Application.new
       Application.print_mode = :string
+
+      Caller.stub!(:exec).with("which ruby").and_return("/path/to/ruby")
+      Caller.stub!(:exec).with("which rvm").and_return("/path/to/rvm")
+      Caller.stub!(:exec).with("which node").and_return("/path/to/node")
+      Caller.stub!(:exec).with("ssh aforward@a4word.com 'which ruby'").and_return("/path/to/a4word/ruby")
     end
     
     describe "#run" do
@@ -72,9 +77,6 @@ module Reservoir
         end
 
         it "should handle multiple file" do
-          @mock = Caller.new
-          @mock.stub!(:go).and_return(true)
-          Caller.stub!(:new).and_return(@mock)
           @application.should_receive(:welcome_message)
           @application.should_receive(:project_message).exactly(2).times
           @application.should_receive(:which_script_message).exactly(4).times

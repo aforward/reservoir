@@ -6,8 +6,6 @@ module Reservoir
 
     before (:each) do
       @which_script = WhichScript.new
-      @caller = Caller.new
-      Caller.stub!(:new).and_return(@caller)
     end
     
     describe "#initialize" do
@@ -36,8 +34,7 @@ module Reservoir
       end
       
       it "should analyze on remote server if set in constructor" do
-        Caller.should_receive(:new).with(remote_server: 'a', remote_user: 'b')
-        @caller.should_receive(:go_with_response).with("which ruby").and_return("blah")
+        Caller.stub!(:exec).with("ssh b@a 'which ruby'").and_return("blah")
         @which_script = WhichScript.new(remote_server: 'a', remote_user: 'b')
         @which_script.go('ruby').should == true
         @which_script.success?.should == true

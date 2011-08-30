@@ -18,7 +18,7 @@ module Reservoir
     def go(command = nil)
       begin
         @command = command unless command.nil?
-        @response = `#{full_command}`
+        @response = Caller.exec(full_command)
         @success = true
       rescue
         @response = "#{$!}"
@@ -43,6 +43,11 @@ module Reservoir
       return @command if @remote_server.nil?
       "#{ssh} '#{@command}'"
     end
+    
+    def self.exec(full_command)
+      `#{full_command}`
+    end
+    
     
   end
 

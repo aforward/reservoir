@@ -8,7 +8,13 @@ module Reservoir
       @analyzer = Version.new
     end
     
-    describe "#analyze" do
+    describe "#go" do
+      
+      
+    end
+    
+    
+    describe "#read" do
       
       it "should store version_info" do
         @analyzer.read("blah")

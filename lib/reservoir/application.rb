@@ -40,21 +40,21 @@ module Reservoir
         Application.print usage_message
         return
       end
-      
-      args.each do |filename|
-        begin
+
+      begin
+        args.each do |filename|
           all_projects = Project.load_from_file(filename)
-          Application.print project_message(filename)
           all_projects.each do |p|
+            Application.print project_message(p)
             which_script = p.which_script_template
             p.scripts.each do |script|
               which_script.go(script)
               Application.print which_script_message(which_script)
             end
           end
-        rescue
-          Application.print exception_message($!)
         end
+      rescue
+        Application.print exception_message($!)
       end
       Application.print ""
     end

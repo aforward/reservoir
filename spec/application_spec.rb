@@ -67,6 +67,7 @@ module Reservoir
           @application.should_receive(:welcome_message)
           @application.should_receive(:project_message)
           @application.should_receive(:which_script_message).exactly(3).times
+          @application.should_not_receive(:exception_message)
           @application.run([@project_file])
         end
 
@@ -77,6 +78,7 @@ module Reservoir
           @application.should_receive(:welcome_message)
           @application.should_receive(:project_message).exactly(2).times
           @application.should_receive(:which_script_message).exactly(4).times
+          @application.should_not_receive(:exception_message)
           @application.run([@project_file,@project_file2])
         end
         
@@ -102,7 +104,7 @@ module Reservoir
     describe "#messages" do
       
       it "should welcome_message" do
-        @application.welcome_message.should == "reservoir, version 0.0.2\n"
+        @application.welcome_message.should == "reservoir, version 0.0.3\n"
       end
 
       it "should usage_message" do

@@ -1,0 +1,11 @@
+A simple application assets in your public and private cloud.
+
+== Usage ==
+
+USAGE: reservoir <project_file1> <project_file2> ...
+   or  reservoir help to see this message
+   or  reservoir version to see the version
+   
+== Learn More ==
+
+Contact Andrew Forward at aforward@gmail.com for more details and project direction

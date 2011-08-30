@@ -1,0 +1,6 @@
+version: 0.0.1
+remote:
+  user: aforward
+  server: a4word.com
+scripts:
+  - name: ruby

@@ -1,0 +1,8 @@
+version: 0.0.1
+remote:
+  user: deployer
+  server: a4word.com
+scripts:
+  - name: ruby
+  - name: rvm
+  - name: node

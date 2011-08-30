@@ -5,8 +5,82 @@ module Reservoir
   describe Application do
 
     before (:each) do
+      @project_file = File.dirname(__FILE__) + '/sample_project.yml'
+      @project_file2 = File.dirname(__FILE__) + '/sample_project2.yml'
       @application = Application.new
       Application.print_mode = :string
+    end
+    
+    describe "#run" do
+      
+      describe "no args" do
+
+        it "should handle nil args" do
+          @application.should_receive(:usage_message)
+          @application.run(nil)
+        end
+
+        it "should handle empty args" do
+          @application.should_receive(:usage_message)
+          @application.run([])
+        end
+      
+      end
+      
+      describe "help" do
+
+        ["--help","-help","-h","--h","help"].each do |help_name|
+          it "should support --help" do
+            @application.should_receive(:welcome_message)
+            @application.should_receive(:usage_message)
+            @application.run([help_name])
+          end
+        end
+
+      end
+      
+      describe "version" do
+
+        ["--version","-version","-v","--v","version"].each do |help_name|
+          it "should support --help" do
+            @application.should_receive(:welcome_message)
+            @application.should_not_receive(:exception_message)
+            @application.run([help_name])
+          end
+        end
+        
+      end
+      
+      describe "invalid project file" do
+        
+        it "should fail gracefully" do
+          @application.should_receive(:welcome_message)
+          @application.should_receive(:exception_message)
+          @application.run(["blah.yml"])
+        end
+        
+      end
+      
+      describe "valid project files" do
+
+        it "should handle one file" do
+          @application.should_receive(:welcome_message)
+          @application.should_receive(:project_message).with(@project_file)
+          @application.should_receive(:which_script_message).exactly(3).times
+          @application.run([@project_file])
+        end
+
+        it "should handle multiple file" do
+          @application.should_receive(:welcome_message)
+          @application.should_receive(:project_message).with(@project_file)
+          @application.should_receive(:project_message).with(@project_file2)
+          @application.should_receive(:which_script_message).exactly(4).times
+          @application.run([@project_file,@project_file2])
+        end
+
+        
+      end
+      
     end
 
     describe "#print_mode" do
@@ -24,11 +98,28 @@ module Reservoir
       
     end
 
-    describe "#welcome_message" do
+    describe "#messages" do
       
-      it "should work" do
-        @application.welcome_message.should == "reservoir, version #{Reservoir::VERSION}\n"
+      it "should welcome_message" do
+        @application.welcome_message.should == "reservoir, version 0.0.1\n"
       end
+
+      it "should usage_message" do
+        @application.usage_message.should == "USAGE: reservoir <project_file1> <project_file2> ...\n   or  reservoir help to see this message\n"
+      end
+      
+      it "should project_message" do
+        @application.project_message("blah.txt").should == "\n===\nLoading Project: blah.txt\n===\n"
+      end
+      
+      it "should exception_message" do
+        begin
+          File.open("garble.txt")
+        rescue
+          @application.exception_message($!).split("\n")[0].should == "ERROR: No such file or directory - garble.txt"
+        end
+      end
+
       
     end
     

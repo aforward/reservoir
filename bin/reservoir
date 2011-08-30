@@ -7,4 +7,4 @@ rescue LoadError
 end
 
 require 'reservoir'
-Reservoir::Application.new.run
+Reservoir::Application.new.run(ARGV)

@@ -18,7 +18,7 @@ module Reservoir
     def go(command = nil)
       begin
         @command = command unless command.nil?
-        @response = Caller.exec(full_command)
+        @response = Caller.exec(full_command).strip
         @success = true
       rescue
         @response = "#{$!}"

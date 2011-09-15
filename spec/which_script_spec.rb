@@ -22,7 +22,7 @@ module Reservoir
       it "should set the path" do
         @which_script.go('ruby').should == true
         @which_script.success?.should == true
-        @which_script.path.should == `which ruby`
+        @which_script.path.should == `which ruby`.strip
         @which_script.response.should == @which_script.path
       end
       
@@ -40,23 +40,16 @@ module Reservoir
         @which_script.success?.should == true
         @which_script.path.should == "blah"
       end
+
+      it "should strip extra white space" do
+        Caller.stub!(:exec).with("which ruby").and_return("blah\n")
+        @which_script.go('ruby').should == true
+        @which_script.success?.should == true
+        @which_script.path.should == "blah"
+      end
       
     end
     
-    describe "#to_s" do
-      
-      it "should say unknown if not known" do
-        @which_script.to_s.should == "WhichScript called before any #go(script) was performed"
-      end
-      
-      it "should say where the script went" do
-        @which_script.script = "a"
-        @which_script.response = "b"
-        @which_script.to_s.should == "a : b"
-      end
-      
-    end
-
   end
 
 end

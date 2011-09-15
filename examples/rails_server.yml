@@ -1,9 +1,9 @@
-version: 0.0.3
-remotes:
-  - user: deployer
-    server: a4word.com
-  - user:
-    server:
+version: 0.0.4
+# remotes:
+#   - user: deployer
+#     server: a4word.com
+#   - user:
+#     server:
 scripts:
   - name: ruby
   - name: rvm

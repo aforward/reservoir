@@ -51,6 +51,12 @@ module Reservoir
         @caller.response.should == "No such file or directory - garbligook"
       end
       
+      it "should strip whitespace" do
+        Caller.stub!(:exec).with("garble").and_return("blah\n")
+        @caller.command = "garble"
+        @caller.go_with_response.should == "blah"
+      end
+      
     end
 
 

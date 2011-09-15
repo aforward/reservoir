@@ -8,12 +8,25 @@ module Reservoir
       @project_file = File.dirname(__FILE__) + '/sample_project.yml'
       @project_file2 = File.dirname(__FILE__) + '/sample_project2.yml'
       @application = Application.new
-      Application.print_mode = :string
+      @application.print_mode = :string
 
       Caller.stub!(:exec).with("which ruby").and_return("/path/to/ruby")
       Caller.stub!(:exec).with("which rvm").and_return("/path/to/rvm")
       Caller.stub!(:exec).with("which node").and_return("/path/to/node")
       Caller.stub!(:exec).with("ssh aforward@a4word.com 'which ruby'").and_return("/path/to/a4word/ruby")
+
+      Caller.stub!(:exec).with("ruby --version").and_return("v1.2.3")
+      Caller.stub!(:exec).with("rvm --version").and_return("1.2.4")
+      Caller.stub!(:exec).with("node --version").and_return("")
+      Caller.stub!(:exec).with("node -version").and_return("")      
+      Caller.stub!(:exec).with("ssh aforward@a4word.com 'ruby --version'").and_return("1.2.6")
+
+      File.delete("output.txt") if File.exist?("output.txt")
+      File.delete("a4word.com.reservoir") if File.exist?("a4word.com.reservoir")
+    end
+    
+    after(:all) do
+      File.delete("output.txt") if File.exist?("output.txt")
     end
     
     describe "#run" do
@@ -71,7 +84,9 @@ module Reservoir
         it "should handle one file" do
           @application.should_receive(:welcome_message)
           @application.should_receive(:project_message)
-          @application.should_receive(:which_script_message).exactly(3).times
+          @application.should_receive(:which_version_message).with("ruby","1.2.3","/path/to/ruby")
+          @application.should_receive(:which_version_message).with("rvm","1.2.4","/path/to/rvm")
+          @application.should_receive(:which_version_message).with("node",nil,"/path/to/node")
           @application.should_not_receive(:exception_message)
           @application.run([@project_file])
         end
@@ -79,9 +94,10 @@ module Reservoir
         it "should handle multiple file" do
           @application.should_receive(:welcome_message)
           @application.should_receive(:project_message).exactly(2).times
-          @application.should_receive(:which_script_message).exactly(4).times
+          @application.should_receive(:which_version_message).exactly(4).times
           @application.should_not_receive(:exception_message)
           @application.run([@project_file,@project_file2])
+          File.exists?("a4word.com.reservoir")
         end
         
       end
@@ -91,14 +107,21 @@ module Reservoir
     describe "#print_mode" do
       
       it "should be settable" do
-        Application.print_mode = :a
-        Application.print_mode.should == :a
+        @application.print_mode = :a
+        @application.print_mode.should == :a
       end
       
-      it "should be resetable" do
-        Application.print_mode = :a
-        Application.reset_print_mode
-        Application.print_mode.should == :stdio
+      it "should default to stdio" do
+        @application.print_mode = nil
+        @application.print_mode.should == :stdio
+      end
+      
+      it "should default to :stdio" do
+        Application.new.print_mode.should == :stdio
+      end
+      
+      it "should be settable in constructor" do
+        Application.new(print_mode: :blah).print_mode.should == :blah
       end
       
     end
@@ -106,7 +129,7 @@ module Reservoir
     describe "#messages" do
       
       it "should welcome_message" do
-        @application.welcome_message.should == "reservoir, version 0.0.3\n"
+        @application.welcome_message.should == "reservoir, version 0.0.4\n"
       end
 
       it "should usage_message" do
@@ -126,20 +149,31 @@ module Reservoir
         end
       end
 
+      it "should which_version_message" do
+        @application.which_version_message("a","1.2.3","/path/to/a").should == "a : 1.2.3 : /path/to/a\n"
+      end
+
       
     end
     
     describe "#print" do
       
       it "should return a string if print_mode :string" do
-        Application.print_mode = :string
-        Application.print("x").should == "x"
+        @application.print_mode = :string
+        @application.print("x").should == "x"
       end
       
       it "should write to output if print_mode :stdio" do
         STDOUT.should_receive(:puts).with("x")
-        Application.print_mode = :stdio
-        Application.print("x")
+        @application.print_mode = :stdio
+        @application.print("x")
+      end
+      
+      it "should write to file" do
+        @application.print_mode = { file: "output.txt" }
+        @application.print("x")
+        @application.print("y")
+        IO.read("output.txt").should == "x\ny\n"
       end
       
     end

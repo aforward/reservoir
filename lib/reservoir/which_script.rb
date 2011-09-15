@@ -17,11 +17,6 @@ module Reservoir
       @caller.remote_server
     end
     
-    def to_s
-      return "WhichScript called before any #go(script) was performed" if @script.nil?
-      "#{@script} : #{@response}"
-    end
-    
     def go(app_name)
       @script = app_name
       @path = @caller.go_with_response("which #{app_name}")

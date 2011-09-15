@@ -1,4 +1,5 @@
-version: 0.0.3
+version: 0.0.4
+output: @@SERVER_NAME@@.reservoir
 remotes:
   - user: aforward
     server: a4word.com

@@ -7,8 +7,10 @@ module Reservoir
     before (:each) do
       @project_file = File.dirname(__FILE__) + '/sample_project.yml'
       @project_file2 = File.dirname(__FILE__) + '/sample_project2.yml'
+      @project_file3 = File.dirname(__FILE__) + '/sample_project3.yml'
+
       @application = Application.new
-      @application.print_mode = :string
+      @application.display = :string
 
       Caller.stub!(:exec).with("which ruby").and_return("/path/to/ruby")
       Caller.stub!(:exec).with("which rvm").and_return("/path/to/rvm")
@@ -32,12 +34,12 @@ module Reservoir
     describe "#run" do
       
       describe "no args" do
-
+    
         it "should handle nil args" do
           @application.should_receive(:usage_message)
           @application.run(nil)
         end
-
+    
         it "should handle empty args" do
           @application.should_receive(:usage_message)
           @application.run([])
@@ -46,22 +48,22 @@ module Reservoir
       end
       
       describe "help" do
-
+    
         ["--help","-help","-h","--h","help"].each do |help_name|
           it "should support --help" do
-            @application.should_receive(:welcome_message)
+            @application.should_receive(:version_message)
             @application.should_receive(:usage_message)
             @application.run([help_name])
           end
         end
-
+    
       end
       
       describe "version" do
-
+    
         ["--version","-version","-v","--v","version"].each do |help_name|
           it "should support --help" do
-            @application.should_receive(:welcome_message)
+            @application.should_receive(:version_message)
             @application.should_not_receive(:exception_message)
             @application.run([help_name])
           end
@@ -72,7 +74,6 @@ module Reservoir
       describe "invalid project file" do
         
         it "should fail gracefully" do
-          @application.should_receive(:welcome_message)
           @application.should_receive(:exception_message)
           @application.run(["blah.yml"])
         end
@@ -80,9 +81,9 @@ module Reservoir
       end
       
       describe "valid project files" do
-
+    
         it "should handle one file" do
-          @application.should_receive(:welcome_message)
+          @application.should_receive(:version_message)
           @application.should_receive(:project_message)
           @application.should_receive(:which_version_message).with("ruby","1.2.3","/path/to/ruby")
           @application.should_receive(:which_version_message).with("rvm","1.2.4","/path/to/rvm")
@@ -90,55 +91,72 @@ module Reservoir
           @application.should_not_receive(:exception_message)
           @application.run([@project_file])
         end
-
+    
         it "should handle multiple file" do
-          @application.should_receive(:welcome_message)
+          @application.should_receive(:version_message).exactly(2).times
           @application.should_receive(:project_message).exactly(2).times
           @application.should_receive(:which_version_message).exactly(4).times
           @application.should_not_receive(:exception_message)
           @application.run([@project_file,@project_file2])
-          File.exists?("a4word.com.reservoir")
+        end
+    
+        it "should save files to disk" do
+          @application.run([@project_file,@project_file2])
+          File.exists?("a4word.com.reservoir").should == true
+        end
+    
+    
+        it "should clean up existing files" do
+          open("a4word.com.reservoir", 'a+') { |f| f.puts("garble") }
+          @application.run([@project_file,@project_file2])
+          IO.read("a4word.com.reservoir").should == "reservoir, version 0.1.0\nserver: aforward@a4word.com\nfile: /Users/aforward/tp/projects/cenx/reservoir/spec/sample_project2.yml\nruby : 1.2.6 : /path/to/a4word/ruby\n"
+        end
+    
+        it "should support mode: data_only" do
+          open("a4word.com.reservoir", 'a+') { |f| f.puts("garble") }
+          @application.run([@project_file3])
+          IO.read("a4word.com.reservoir").should == "reservoir, version 0.1.0\nruby : 1.2.6 : /path/to/a4word/ruby\n"
         end
         
       end
       
     end
-
-    describe "#print_mode" do
+    
+    describe "#display" do
       
       it "should be settable" do
-        @application.print_mode = :a
-        @application.print_mode.should == :a
+        @application.display = :a
+        @application.display.should == :a
       end
       
       it "should default to stdio" do
-        @application.print_mode = nil
-        @application.print_mode.should == :stdio
+        @application.display = nil
+        @application.display.should == :stdio
       end
       
       it "should default to :stdio" do
-        Application.new.print_mode.should == :stdio
+        Application.new.display.should == :stdio
       end
       
       it "should be settable in constructor" do
-        Application.new(print_mode: :blah).print_mode.should == :blah
+        Application.new(display: :blah).display.should == :blah
       end
       
     end
-
+    
     describe "#messages" do
       
-      it "should welcome_message" do
-        @application.welcome_message.should == "reservoir, version 0.0.4\n"
+      it "should version_message" do
+        @application.version_message.should == "reservoir, version 0.1.0\n"
       end
-
+    
       it "should usage_message" do
         @application.usage_message.should == "USAGE: reservoir <project_file1> <project_file2> ...\n   or  reservoir help to see this message\n"
       end
       
       it "should project_message" do
         p = Project.new(file: "blah.txt")
-        @application.project_message(p).should == "\n===\nLoading Project: local [blah.txt]\n===\n"
+        @application.project_message(p).should == "server: local\nfile: blah.txt\n"
       end
       
       it "should exception_message" do
@@ -148,29 +166,29 @@ module Reservoir
           @application.exception_message($!).split("\n")[0].should == "ERROR: No such file or directory - garble.txt"
         end
       end
-
+    
       it "should which_version_message" do
         @application.which_version_message("a","1.2.3","/path/to/a").should == "a : 1.2.3 : /path/to/a\n"
       end
-
+    
       
     end
     
     describe "#print" do
       
-      it "should return a string if print_mode :string" do
-        @application.print_mode = :string
+      it "should return a string if display :string" do
+        @application.display = :string
         @application.print("x").should == "x"
       end
       
-      it "should write to output if print_mode :stdio" do
+      it "should write to output if display :stdio" do
         STDOUT.should_receive(:puts).with("x")
-        @application.print_mode = :stdio
+        @application.display = :stdio
         @application.print("x")
       end
       
       it "should write to file" do
-        @application.print_mode = { file: "output.txt" }
+        @application.display = { filename: "output.txt" }
         @application.print("x")
         @application.print("y")
         IO.read("output.txt").should == "x\ny\n"

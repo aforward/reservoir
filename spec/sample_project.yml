@@ -1,5 +1,5 @@
-version: 0.0.4
-output: :string
+version: 0.1.0
+display: string
 scripts:
   - name: ruby
   - name: rvm

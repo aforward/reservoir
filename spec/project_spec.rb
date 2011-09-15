@@ -20,6 +20,23 @@ module Reservoir
       end
       
     end
+    
+    describe "display" do
+      
+      it "should default to stdio" do
+        Project.new.display.should == :stdio
+      end
+      
+      it "should assume strings are files" do
+        Project.new(display: { :filename => "blah" }).display.should == { filename: "blah" }
+      end
+      
+      it "should assume symbols are as-is" do
+        Project.new(display: :string).display.should == :string
+      end
+      
+      
+    end
 
     describe "#load_from_file" do
       
@@ -30,7 +47,7 @@ module Reservoir
           all.size.should == 1
           project = all.first
           project.scripts.should == [ "ruby", "rvm", "node"]
-          project.output.should == :string
+          project.display.should == :string
         end
 
       end
@@ -47,7 +64,7 @@ module Reservoir
             t = project.template(clazz)
             t.remote_user.should == 'aforward'
             t.remote_server.should == 'a4word.com'
-            project.output.should == "a4word.com.reservoir"
+            project.display.should == { :filename => "a4word.com.reservoir" }
           end
 
           it "should ignore remote data if not set" do

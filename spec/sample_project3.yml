@@ -1,11 +1,9 @@
 version: 0.1.0
-display:
+display: 
   filename: @@SERVER_NAME@@.reservoir
   mode: data_only
 remotes:
-  - user: deployer
+  - user: aforward
     server: a4word.com
 scripts:
   - name: ruby
-  - name: rvm
-  - name: node

@@ -2,17 +2,21 @@ module Reservoir
   
   class Application
     
-    attr_accessor :print_mode
+    attr_accessor :display
     
     def initialize(data = {})
-      @print_mode = data[:print_mode] || :stdio
+      @display = data[:display] || :stdio
+      @file_resets = []
+      @version_displayed_already = false
     end
     
-    def print_mode=(val)
-      @print_mode = val || :stdio
+    def display=(val)
+      @display = val || :stdio
     end
     
-    def welcome_message
+    def version_message
+      return nil if @version_displayed_already
+      @version_displayed_already = true
       print "reservoir, version #{Reservoir::VERSION}\n"
     end
     
@@ -25,7 +29,7 @@ module Reservoir
     end
     
     def project_message(project)
-      print "\n===\nLoading Project: #{project.name} [#{project.file}]\n===\n"
+      print "server: #{project.name}\nfile: #{project.file}\n"
     end
     
     def which_version_message(script,version,path)
@@ -39,14 +43,14 @@ module Reservoir
         usage_message
         return
       end
-      
-      welcome_message
 
       if ["--version","-version","-v","--v","version"].include?(args[0])
+        version_message
         return
       end
       
       if ["--help","-help","-h","--h","help"].include?(args[0])
+        version_message
         usage_message
         return
       end
@@ -55,8 +59,10 @@ module Reservoir
         args.each do |filename|
           all_projects = Project.load_from_file(filename)
           all_projects.each do |p|
-            print_mode = p.output
-            project_message(p)
+            self.display = p.display
+            self.flush
+            version_message
+            project_message(p) unless is_data_only?
             p.scripts.each do |script|
               which_script = p.template(WhichScript)
               version = p.template(Version)
@@ -69,18 +75,35 @@ module Reservoir
       rescue
         exception_message($!)
       end
-      print ""
+    end
+
+    def flush
+      return if @file_resets.include?(display)
+      return unless is_file?
+      @version_displayed_already = false
+      @file_resets<< display
+      File.delete(@display[:filename]) if File.exist?(@display[:filename])
     end
 
     def print(output)
-      if @print_mode == :stdio
+      if @display == :stdio
         STDOUT.puts output
-      elsif @print_mode.kind_of?(Hash) && !@print_mode[:file].nil?
-        open(@print_mode[:file], 'a') { |f| f.puts(output) }
+      elsif is_file?
+        open(@display[:filename], 'a+') { |f| f.puts(output) }
       else
         output
       end
     end
+    
+    private
+    
+      def is_file?
+        @display.kind_of?(Hash) && !@display[:filename].nil?
+      end
+      
+      def is_data_only?
+        @display.kind_of?(Hash) && @display[:mode] == "data_only"
+      end
 
   end
   

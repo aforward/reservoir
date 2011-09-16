@@ -1,6 +1,6 @@
-version: 0.1.0
+version: 0.1.1
 display: 
-  filename: @@SERVER_NAME@@.reservoir
+  filename: ./tmp/moretmp/@@SERVER_NAME@@
   mode: data_only
 remotes:
   - user: aforward

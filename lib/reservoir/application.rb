@@ -1,3 +1,5 @@
+require "pathname"
+
 module Reservoir
   
   class Application
@@ -89,6 +91,7 @@ module Reservoir
       if @display == :stdio
         STDOUT.puts output
       elsif is_file?
+        system("mkdir -p #{Pathname.new(@display[:filename]).parent}")
         open(@display[:filename], 'a+') { |f| f.puts(output) }
       else
         output

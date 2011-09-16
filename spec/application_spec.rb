@@ -23,13 +23,19 @@ module Reservoir
       Caller.stub!(:exec).with("node -version").and_return("")      
       Caller.stub!(:exec).with("ssh aforward@a4word.com 'ruby --version'").and_return("1.2.6")
 
-      File.delete("output.txt") if File.exist?("output.txt")
-      File.delete("a4word.com.reservoir") if File.exist?("a4word.com.reservoir")
+      cleanup
     end
     
     after(:all) do
-      File.delete("output.txt") if File.exist?("output.txt")
+      cleanup
     end
+
+    def cleanup
+      File.delete("output.txt") if File.exist?("output.txt")
+      File.delete("a4word.com") if File.exist?("a4word.com")
+      system("rm -rf ./tmp")
+    end
+    
     
     describe "#run" do
       
@@ -102,20 +108,19 @@ module Reservoir
     
         it "should save files to disk" do
           @application.run([@project_file,@project_file2])
-          File.exists?("a4word.com.reservoir").should == true
+          File.exists?("a4word.com").should == true
         end
     
     
         it "should clean up existing files" do
-          open("a4word.com.reservoir", 'a+') { |f| f.puts("garble") }
+          open("a4word.com", 'a+') { |f| f.puts("garble") }
           @application.run([@project_file,@project_file2])
-          IO.read("a4word.com.reservoir").should == "reservoir, version 0.1.0\nserver: aforward@a4word.com\nfile: /Users/aforward/tp/projects/cenx/reservoir/spec/sample_project2.yml\nruby : 1.2.6 : /path/to/a4word/ruby\n"
+          IO.read("a4word.com").should == "reservoir, version 0.1.1\nserver: aforward@a4word.com\nfile: /Users/aforward/tp/projects/cenx/reservoir/spec/sample_project2.yml\nruby : 1.2.6 : /path/to/a4word/ruby\n"
         end
     
         it "should support mode: data_only" do
-          open("a4word.com.reservoir", 'a+') { |f| f.puts("garble") }
           @application.run([@project_file3])
-          IO.read("a4word.com.reservoir").should == "reservoir, version 0.1.0\nruby : 1.2.6 : /path/to/a4word/ruby\n"
+          IO.read("./tmp/moretmp/a4word.com").should == "reservoir, version 0.1.1\nruby : 1.2.6 : /path/to/a4word/ruby\n"
         end
         
       end
@@ -147,7 +152,7 @@ module Reservoir
     describe "#messages" do
       
       it "should version_message" do
-        @application.version_message.should == "reservoir, version 0.1.0\n"
+        @application.version_message.should == "reservoir, version 0.1.1\n"
       end
     
       it "should usage_message" do

@@ -64,7 +64,7 @@ module Reservoir
             t = project.template(clazz)
             t.remote_user.should == 'aforward'
             t.remote_server.should == 'a4word.com'
-            project.display.should == { :filename => "a4word.com.reservoir" }
+            project.display.should == { :filename => "a4word.com" }
           end
 
           it "should ignore remote data if not set" do

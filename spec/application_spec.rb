@@ -138,12 +138,12 @@ module Reservoir
         it "should clean up existing files" do
           open("a4word.com", 'a+') { |f| f.puts("garble") }
           @application.run([@project_file,@project_file2])
-          IO.read("a4word.com").should == "reservoir, version 0.1.1\nserver: aforward@a4word.com\nfile: /Users/aforward/tp/projects/cenx/reservoir/spec/sample_project2.yml\nruby : 1.2.6 : /path/to/a4word/ruby\n"
+          IO.read("a4word.com").should == "reservoir, version 0.1.2\nserver: aforward@a4word.com\nfile: /Users/aforward/tp/projects/cenx/reservoir/spec/sample_project2.yml\nruby : 1.2.6 : /path/to/a4word/ruby\n"
         end
     
         it "should support mode: data_only" do
           @application.run([@project_file3])
-          IO.read("./tmp/moretmp/a4word.com").should == "reservoir, version 0.1.1\nruby : 1.2.6 : /path/to/a4word/ruby\n"
+          IO.read("./tmp/moretmp/a4word.com").should == "reservoir, version 0.1.2\nruby : 1.2.6 : /path/to/a4word/ruby\n"
         end
         
       end
@@ -175,7 +175,7 @@ module Reservoir
     describe "#messages" do
       
       it "should version_message" do
-        @application.version_message.should == "reservoir, version 0.1.1\n"
+        @application.version_message.should == "reservoir, version 0.1.2\n"
       end
     
       it "should usage_message" do

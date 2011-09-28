@@ -22,9 +22,11 @@ module Reservoir
 
     def possible_commands(script_name)
       return [] if script_name.nil? || script_name == ""
-      known_arguments = Version.arguments[script_name]
-      return ["#{script_name} #{known_arguments}"] unless known_arguments.nil?
-      ["--version","-version"].collect { |args| "#{script_name} #{args}"}
+      known_scripts = Version.known_scripts[script_name]
+      return [ known_scripts ] unless known_scripts.nil?
+      all = ["--version","-version"].collect { |args| "#{script_name} #{args}"}
+      all << "npm view #{script_name} | grep version:"
+      all
     end
     
     def go(script_name)

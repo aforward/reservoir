@@ -2,9 +2,9 @@ module Reservoir
   
   class Version
     
-    def self.arguments
+    def self.known_scripts
       {
-        "ruby" => "--version",
+        "ruby" => "ruby --version",
       }
     end
 

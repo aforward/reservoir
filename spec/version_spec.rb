@@ -11,7 +11,7 @@ module Reservoir
     describe "#go" do
       
       it "should use arguments if set" do
-        Version.stub!(:arguments).and_return({ "garble" => "-vgarble" })
+        Version.stub!(:known_scripts).and_return({ "garble" => "garble -vgarble" })
         Caller.stub!(:exec).with("garble -vgarble").and_return("garble v1.2.3")
         @version.go("garble").should == true
         @version.success?.should == true
@@ -20,8 +20,8 @@ module Reservoir
       end
 
       it "should return false if unable to locate version" do
-        Caller.stub!(:exec).with("garble --version").and_return("blah")
-        Caller.stub!(:exec).with("garble -version").and_return("")
+        stub_version("garble",["blah"])
+
         @version.go("garble").should == false
         @version.success?.should == false
         @version.version_info.should == nil
@@ -41,6 +41,8 @@ module Reservoir
         Caller.stub!(:exec).with("garble --version").and_return("v1.2.4")
         Caller.stub!(:exec).with("marble --version").and_return("")
         Caller.stub!(:exec).with("marble -version").and_return("")
+        Caller.stub!(:exec).with("npm view marble | grep version:").and_return("")
+
         
         @version.go("garble").should == true
         @version.version_info.should == "v1.2.4"
@@ -64,12 +66,12 @@ module Reservoir
       end
 
       it "should use arguments if set" do
-        Version.stub!(:arguments).and_return({ "garble" => "-vgarble" })
+        Version.stub!(:known_scripts).and_return({ "garble" => "garble -vgarble" })
         @version.possible_commands("garble").should == ["garble -vgarble"]
       end
       
       it "should provide possible answers if not in known set" do
-        @version.possible_commands("garble").should == ["garble --version","garble -version"]
+        @version.possible_commands("garble").should == ["garble --version","garble -version", "npm view garble | grep version:"]
       end
       
     end
@@ -119,6 +121,12 @@ module Reservoir
           @version.read("Phusion Passenger version 3.0.7").should == true
           @version.version_parts.should == ["3","0","7"]
           @version.version.should == "3.0.7"
+        end
+        
+        it "should understand npm package" do
+          @version.read("version: '0.8.4',").should == true
+          @version.version_parts.should == ["0","8","4"]
+          @version.version.should == "0.8.4"
         end
         
       end

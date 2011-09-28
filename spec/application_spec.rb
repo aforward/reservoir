@@ -17,10 +17,9 @@ module Reservoir
       Caller.stub!(:exec).with("which node").and_return("/path/to/node")
       Caller.stub!(:exec).with("ssh aforward@a4word.com 'which ruby'").and_return("/path/to/a4word/ruby")
 
-      Caller.stub!(:exec).with("ruby --version").and_return("v1.2.3")
-      Caller.stub!(:exec).with("rvm --version").and_return("1.2.4")
-      Caller.stub!(:exec).with("node --version").and_return("")
-      Caller.stub!(:exec).with("node -version").and_return("")      
+      stub_version("ruby","v1.2.3")
+      stub_version("rvm","v1.2.4")
+      stub_version("node")
       Caller.stub!(:exec).with("ssh aforward@a4word.com 'ruby --version'").and_return("1.2.6")
 
       cleanup
@@ -73,6 +72,30 @@ module Reservoir
             @application.should_not_receive(:exception_message)
             @application.run([help_name])
           end
+        end
+        
+      end
+      
+      describe "interactive" do
+        
+        it "should go until quit" do
+          @application.stub!(:user_input).and_return("quit")
+          @application.should_receive(:interactive_message)
+          @application.should_receive(:interactive_quit_message)
+          @application.run(["-i"])
+        end
+        
+        it "should lookup version" do
+          @application.stub!(:user_input).and_return("ruby","rvm","quit")
+          @application.should_receive(:interactive_message)
+          @application.should_receive(:print).with("1.2.3")
+          @application.should_receive(:print).with("4.5.6")
+          v = Version.new
+          Version.stub!(:new).and_return(v)
+          v.stub(:go).and_return(true)
+          v.stub(:version).and_return("1.2.3","4.5.6")
+          @application.should_receive(:interactive_quit_message)
+          @application.run(["-i"])
         end
         
       end

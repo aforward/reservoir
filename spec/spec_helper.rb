@@ -28,3 +28,12 @@ RSpec.configure do |config|
   # config.use_transactional_fixtures = true
 
 end
+
+
+def stub_version(script_name,outputs = [])
+  outputs = [ outputs ] if outputs.kind_of?(String)
+  
+  Reservoir::Caller.stub!(:exec).with("#{script_name} --version").and_return(outputs[0] || "")
+  Reservoir::Caller.stub!(:exec).with("#{script_name} -version").and_return(outputs[1] || "")
+  Reservoir::Caller.stub!(:exec).with("npm view #{script_name} | grep version:").and_return(outputs[2] || "")
+end

@@ -38,11 +38,33 @@ module Reservoir
       print "#{script} : #{version} : #{path}\n"
     end
     
+    def interactive_message
+      print "Welcome to reservoir interactive shell"
+    end
+    
+    def interactive_quit_message
+      print "Goodbye"
+    end
     
     def run(args)
       
       if args.nil? || args.empty?
         usage_message
+        return
+      end
+      
+      if "-i" == args[0]
+        interactive_message
+        v = Version.new
+        loop do
+          script = user_input
+          if script == "quit" || script == "exit"
+            interactive_quit_message
+            return
+          end
+          v.go(script)
+          print v.version
+        end
         return
       end
 
@@ -96,6 +118,10 @@ module Reservoir
       else
         output
       end
+    end
+    
+    def user_input
+      STDIN.gets.chomp
     end
     
     private
